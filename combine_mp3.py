@@ -27,7 +27,7 @@ from collections import defaultdict
 
 def find_mp3_groups(directory):
     """
-    Find MP3 files in a directory and group them by base name.
+    Find MP3 files in a directory and group them using directory name as base name.
 
     Args:
         directory (str): Directory path to search
@@ -35,21 +35,26 @@ def find_mp3_groups(directory):
     Returns:
         dict: Dictionary where keys are base names and values are lists of file paths
     """
-    mp3_groups = defaultdict(list)
-
-    # Pattern to match MP3 files with numbers: "basename - 01.mp3", "basename - 02.mp3", etc.
-    pattern = re.compile(r'^(.+?)\s*-\s*(\d+)\.mp3$', re.IGNORECASE)
+    mp3_files = []
+    
+    # Pattern to match MP3 files with numbers at end: "filename - 01.mp3", "filename - 02.mp3", etc.
+    # or at beginning: "01 - filename.mp3", "02 - filename.mp3", etc.
+    pattern_end = re.compile(r'^.+?\s*-\s*(\d+)\.mp3$', re.IGNORECASE)
+    pattern_begin = re.compile(r'^(\d+)\s*-\s*.+?\.mp3$', re.IGNORECASE)
 
     for file in os.listdir(directory):
         if file.lower().endswith('.mp3'):
-            match = pattern.match(file)
-            if match:
-                base_name = match.group(1).strip()
+            # Check if file has a number (either at beginning or end)
+            if pattern_end.match(file) or pattern_begin.match(file):
                 full_path = os.path.join(directory, file)
-                mp3_groups[base_name].append(full_path)
-
-    # Only return groups with multiple files
-    return {k: v for k, v in mp3_groups.items() if len(v) > 1}
+                mp3_files.append(full_path)
+    
+    # Use directory name as base name if we have multiple numbered files
+    if len(mp3_files) > 1:
+        base_name = os.path.basename(directory)
+        return {base_name: mp3_files}
+    else:
+        return {}
 
 
 def sort_mp3_files(file_list):
@@ -64,8 +69,15 @@ def sort_mp3_files(file_list):
     """
     def extract_number(file_path):
         filename = os.path.basename(file_path)
+        # Try number at end first
         match = re.search(r'-\s*(\d+)\.mp3$', filename, re.IGNORECASE)
-        return int(match.group(1)) if match else 0
+        if match:
+            return int(match.group(1))
+        # Try number at beginning
+        match = re.search(r'^(\d+)\s*-', filename, re.IGNORECASE)
+        if match:
+            return int(match.group(1))
+        return 0
 
     return sorted(file_list, key=extract_number)
 
