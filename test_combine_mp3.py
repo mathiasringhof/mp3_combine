@@ -420,6 +420,72 @@ class TestProcessDirectoryEdgeCases(unittest.TestCase):
         self.assertIn(directory_name, groups)
         self.assertEqual(len(groups[directory_name]), 2)
 
+    def test_directory_with_period_number_format(self):
+        """Test directory with files that start with 'NN. ' format instead of 'NN - '."""
+        test_files = [
+            "01. Tracey West - Track 1 - Story Title.mp3",
+            "02. Tracey West - Track 2 - Story Title.mp3",
+            "03. Tracey West - Track 3 - Story Title.mp3"
+        ]
+        self.create_test_files(test_files)
+
+        groups = find_mp3_groups(self.test_dir)
+        # This should work after fixing the regex to handle 'NN. ' format
+        self.assertEqual(len(groups), 1)
+        directory_name = os.path.basename(self.test_dir)
+        self.assertIn(directory_name, groups)
+        self.assertEqual(len(groups[directory_name]), 3)
+
+    def test_directory_with_complex_track_naming(self):
+        """Test directory with complex track naming like real audiobook files."""
+        test_files = [
+            "01. Author Name - Track 1 - Book Title - Series Info.mp3",
+            "02. Author Name - Track 2 - Book Title - Series Info.mp3",
+            "03. Author Name - Track 3 - Book Title - Series Info.mp3",
+            "04. Author Name - Track 4 - Book Title - Series Info.mp3",
+            "05. Author Name - Track 5 - Book Title - Series Info.mp3"
+        ]
+        self.create_test_files(test_files)
+
+        groups = find_mp3_groups(self.test_dir)
+        # This should work after fixing the regex to handle 'NN. ' format
+        self.assertEqual(len(groups), 1)
+        directory_name = os.path.basename(self.test_dir)
+        self.assertIn(directory_name, groups)
+        self.assertEqual(len(groups[directory_name]), 5)
+
+    def test_directory_with_mixed_period_and_dash_formats(self):
+        """Test directory with mix of 'NN. ' and 'NN - ' formats."""
+        test_files = [
+            "01. Story Title Part One.mp3",  # Period format
+            "02 - Story Title Part Two.mp3",  # Dash format
+            "03. Story Title Part Three.mp3"  # Period format
+        ]
+        self.create_test_files(test_files)
+
+        groups = find_mp3_groups(self.test_dir)
+        # After fixing, both formats should be recognized
+        self.assertEqual(len(groups), 1)
+        directory_name = os.path.basename(self.test_dir)
+        self.assertIn(directory_name, groups)
+        self.assertEqual(len(groups[directory_name]), 3)
+
+    def test_directory_with_leading_zeros_period_format(self):
+        """Test directory with leading zeros in period format."""
+        test_files = [
+            "001. Story Chapter One.mp3",
+            "002. Story Chapter Two.mp3",
+            "010. Story Chapter Ten.mp3"
+        ]
+        self.create_test_files(test_files)
+
+        groups = find_mp3_groups(self.test_dir)
+        # This should work after fixing the regex to handle 'NN. ' format
+        self.assertEqual(len(groups), 1)
+        directory_name = os.path.basename(self.test_dir)
+        self.assertIn(directory_name, groups)
+        self.assertEqual(len(groups[directory_name]), 3)
+
 
 if __name__ == "__main__":
     unittest.main()
