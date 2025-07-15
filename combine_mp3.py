@@ -5,16 +5,23 @@ MP3 Concatenation Script
 This script traverses directories recursively and combines MP3 files with the same base name
 (ignoring numbers) into a single concatenated file using ffmpeg.
 
+Usage:
+    python combine_mp3.py <directory>
+    python combine_mp3.py /path/to/audiobooks
+    python combine_mp3.py "~/Downloads/Audio Files"
+
 Example:
     "Der Aufstieg des Erddrachen - 01.mp3" + "Der Aufstieg des Erddrachen - 02.mp3" + ...
     becomes "Der Aufstieg des Erddrachen.mp3"
 """
 
+import argparse
 import os
 import re
 import subprocess
+import sys
 import tempfile
-from pathlib import Path
+import warnings
 from collections import defaultdict
 
 
@@ -155,21 +162,65 @@ def main():
     """
     Main function to traverse directories and process MP3 files.
     """
+    # Set up argument parser
+    parser = argparse.ArgumentParser(
+        description='Concatenate MP3 files with the same base name in directories',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog='''
+Examples:
+  %(prog)s /path/to/audiobooks
+  %(prog)s "~/Downloads/Audio Files"
+  %(prog)s .  # Process current directory
+
+The script will recursively traverse all subdirectories and concatenate
+MP3 files with the same base name (ignoring numbers) into single files.
+        ''')
+
+    parser.add_argument('directory',
+                        nargs='?',
+                        help='Target directory to process (required)')
+
+    parser.add_argument('--version',
+                        action='version',
+                        version='%(prog)s 1.0')
+
+    # Parse arguments
+    args = parser.parse_args()
+
+    # Check if directory argument is provided
+    if not args.directory:
+        warnings.warn("No target directory specified. Please provide a directory path as an argument.",
+                      UserWarning, stacklevel=2)
+        print("Usage: python combine_mp3.py <directory>")
+        print("Example: python combine_mp3.py /path/to/audiobooks")
+        print("Use --help for more information.")
+        sys.exit(1)
+
+    # Validate and resolve directory path
+    target_dir = os.path.abspath(os.path.expanduser(args.directory))
+
+    if not os.path.exists(target_dir):
+        print(f"Error: Directory '{target_dir}' does not exist.")
+        sys.exit(1)
+
+    if not os.path.isdir(target_dir):
+        print(f"Error: '{target_dir}' is not a directory.")
+        sys.exit(1)
+
     # Check if ffmpeg is available
     try:
         subprocess.run(['ffmpeg', '-version'], capture_output=True, check=True)
     except (subprocess.CalledProcessError, FileNotFoundError):
         print("Error: ffmpeg is not installed or not in PATH")
         print("Please install ffmpeg to use this script")
-        return
+        sys.exit(1)
 
-    current_dir = os.getcwd()
-    print(f"Starting MP3 concatenation from: {current_dir}")
+    print(f"Starting MP3 concatenation from: {target_dir}")
 
     # Walk through all subdirectories
-    for root, dirs, files in os.walk(current_dir):
-        # Skip the current directory itself
-        if root == current_dir:
+    for root, dirs, files in os.walk(target_dir):
+        # Skip the target directory itself
+        if root == target_dir:
             continue
 
         # Only process directories that contain MP3 files
