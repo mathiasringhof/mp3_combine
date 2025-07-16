@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Unit tests for the combine_mp3.py script, specifically testing the find_mp3_groups function.
+Unit tests for the combine_mp3.py script, specifically testing the
+find_mp3_groups function.
 """
 
 import os
@@ -29,7 +30,9 @@ class TestFindMp3Groups(unittest.TestCase):
             Path(file_path).touch()
 
     def test_basic_grouping(self):
-        """Test basic grouping of MP3 files using directory name as base name."""
+        """
+        Test basic grouping of MP3 files using directory name as base name.
+        """
         test_files = [
             "Der Aufstieg des Erddrachen - 01.mp3",
             "Der Aufstieg des Erddrachen - 02.mp3",
@@ -45,7 +48,9 @@ class TestFindMp3Groups(unittest.TestCase):
         self.assertEqual(len(groups[directory_name]), 3)
 
     def test_multiple_groups(self):
-        """Test that all numbered MP3 files in a directory are grouped together."""
+        """
+        Test that all numbered MP3 files in a directory are grouped together.
+        """
         test_files = [
             "Story A - 01.mp3",
             "Story A - 02.mp3",
@@ -76,7 +81,9 @@ class TestFindMp3Groups(unittest.TestCase):
         self.assertEqual(len(groups), 0)  # No groups since only one file
 
     def test_different_number_formats(self):
-        """Test different number formats (with/without leading zeros, spaces)."""
+        """
+        Test different number formats (with/without leading zeros, spaces).
+        """
         test_files = [
             "Test Story - 1.mp3",
             "Test Story - 2.mp3",
@@ -160,8 +167,10 @@ class TestFindMp3Groups(unittest.TestCase):
     def test_long_base_names(self):
         """Test with very long base names."""
         test_files = [
-            "This is a Very Long Story Title with Many Words and Characters - 01.mp3",
-            "This is a Very Long Story Title with Many Words and Characters - 02.mp3"
+            ("This is a Very Long Story Title with Many Words"
+                " and Characters - 01.mp3"),
+            ("This is a Very Long Story Title with Many Words"
+                " and Characters - 02.mp3")
         ]
         self.create_test_files(test_files)
 
@@ -324,7 +333,10 @@ class TestProcessDirectoryEdgeCases(unittest.TestCase):
         self.assertEqual(groups, {})
 
     def test_directory_with_mixed_numbered_and_unnumbered_mp3_files(self):
-        """Test directory with mix of numbered and unnumbered MP3 files but only one numbered."""
+        """
+        Test directory with mix of numbered and unnumbered MP3 files but
+        only one numbered.
+        """
         test_files = [
             "Story - 01.mp3",  # Only one numbered file
             "music.mp3",       # Unnumbered files
@@ -354,7 +366,10 @@ class TestProcessDirectoryEdgeCases(unittest.TestCase):
         self.assertEqual(groups, {})
 
     def test_directory_with_numbers_in_middle_of_filename(self):
-        """Test directory with numbers in middle of filename (not at beginning or end)."""
+        """
+        Test directory with numbers in middle of filename (not at beginning or
+        end).
+        """
         test_files = [
             "Story 01 Chapter.mp3",
             "Story 02 Chapter.mp3",
@@ -380,7 +395,9 @@ class TestProcessDirectoryEdgeCases(unittest.TestCase):
         self.assertEqual(groups, {})
 
     def test_directory_with_special_characters_breaking_pattern(self):
-        """Test directory with special characters that break the expected pattern."""
+        """
+        Test directory with special characters that break the expected pattern.
+        """
         test_files = [
             "Story@01.mp3",
             "Story@02.mp3",
@@ -394,7 +411,9 @@ class TestProcessDirectoryEdgeCases(unittest.TestCase):
         self.assertEqual(groups, {})
 
     def test_directory_with_existing_combined_file(self):
-        """Test directory that already has a combined file but no source files."""
+        """
+        Test directory that already has a combined file but no source files.
+        """
         test_files = [
             "Final Story.mp3",  # Already combined file
             "readme.txt"
@@ -406,7 +425,9 @@ class TestProcessDirectoryEdgeCases(unittest.TestCase):
         self.assertEqual(groups, {})
 
     def test_directory_with_broken_encoding_filenames(self):
-        """Test directory with files that have encoding issues in their names."""
+        """
+        Test directory with files that have encoding issues in their names.
+        """
         test_files = [
             "Story├╝ - 01.mp3",  # Unicode characters that might cause issues
             "Story├╝ - 02.mp3"
@@ -421,7 +442,10 @@ class TestProcessDirectoryEdgeCases(unittest.TestCase):
         self.assertEqual(len(groups[directory_name]), 2)
 
     def test_directory_with_period_number_format(self):
-        """Test directory with files that start with 'NN. ' format instead of 'NN - '."""
+        """
+        Test directory with files that start with 'NN. ' format
+        instead of 'NN - '.
+        """
         test_files = [
             "01. Tracey West - Track 1 - Story Title.mp3",
             "02. Tracey West - Track 2 - Story Title.mp3",
@@ -437,7 +461,9 @@ class TestProcessDirectoryEdgeCases(unittest.TestCase):
         self.assertEqual(len(groups[directory_name]), 3)
 
     def test_directory_with_complex_track_naming(self):
-        """Test directory with complex track naming like real audiobook files."""
+        """
+        Test directory with complex track naming like real audiobook files.
+        """
         test_files = [
             "01. Author Name - Track 1 - Book Title - Series Info.mp3",
             "02. Author Name - Track 2 - Book Title - Series Info.mp3",

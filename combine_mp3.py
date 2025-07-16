@@ -22,7 +22,6 @@ import subprocess
 import sys
 import tempfile
 import warnings
-from collections import defaultdict
 
 
 def find_mp3_groups(directory):
@@ -36,19 +35,19 @@ def find_mp3_groups(directory):
         dict: Dictionary where keys are base names and values are lists of file paths
     """
     mp3_files = []
-    
+
     # Pattern to match MP3 files with numbers at end: "filename - 01.mp3", "filename - 02.mp3", etc.
     # or at beginning: "01 - filename.mp3", "02 - filename.mp3", "01. filename.mp3", etc.
-    pattern_end = re.compile(r'^.+?\s*-\s*(\d+)\.mp3$', re.IGNORECASE)
-    pattern_begin = re.compile(r'^(\d+)[\s\.]*[-\s]+.+?\.mp3$', re.IGNORECASE)
+    pattern_end = re.compile(r"^.+?\s*-\s*(\d+)\.mp3$", re.IGNORECASE)
+    pattern_begin = re.compile(r"^(\d+)[\s\.]*[-\s]+.+?\.mp3$", re.IGNORECASE)
 
     for file in os.listdir(directory):
-        if file.lower().endswith('.mp3'):
+        if file.lower().endswith(".mp3"):
             # Check if file has a number (either at beginning or end)
             if pattern_end.match(file) or pattern_begin.match(file):
                 full_path = os.path.join(directory, file)
                 mp3_files.append(full_path)
-    
+
     # Use directory name as base name if we have multiple numbered files
     if len(mp3_files) > 1:
         base_name = os.path.basename(directory)
@@ -67,14 +66,15 @@ def sort_mp3_files(file_list):
     Returns:
         list: Sorted list of file paths
     """
+
     def extract_number(file_path):
         filename = os.path.basename(file_path)
         # Try number at end first
-        match = re.search(r'-\s*(\d+)\.mp3$', filename, re.IGNORECASE)
+        match = re.search(r"-\s*(\d+)\.mp3$", filename, re.IGNORECASE)
         if match:
             return int(match.group(1))
         # Try number at beginning (both dash and period formats)
-        match = re.search(r'^(\d+)[\s\.]*[-\s]', filename, re.IGNORECASE)
+        match = re.search(r"^(\d+)[\s\.]*[-\s]", filename, re.IGNORECASE)
         if match:
             return int(match.group(1))
         return 0
@@ -95,7 +95,9 @@ def concatenate_mp3s(file_list, output_path):
     """
     try:
         # Create temporary file list for ffmpeg
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".txt", delete=False
+        ) as temp_file:
             for file_path in file_list:
                 # Escape single quotes for ffmpeg
                 escaped_path = file_path.replace("'", "'\\''")
@@ -104,13 +106,17 @@ def concatenate_mp3s(file_list, output_path):
 
         # Run ffmpeg command
         cmd = [
-            'ffmpeg',
-            '-f', 'concat',
-            '-safe', '0',
-            '-i', temp_file_path,
-            '-c', 'copy',
+            "ffmpeg",
+            "-f",
+            "concat",
+            "-safe",
+            "0",
+            "-i",
+            temp_file_path,
+            "-c",
+            "copy",
             output_path,
-            '-y'  # Overwrite output file if it exists
+            "-y",  # Overwrite output file if it exists
         ]
 
         result = subprocess.run(cmd, capture_output=True, text=True)
@@ -156,12 +162,12 @@ def process_directory(directory):
 
         # Skip if output file already exists
         if os.path.exists(output_path):
-            print(f"    Output file '{
-                  output_filename}' already exists, skipping...")
+            print(f"    Output file '{output_filename}' already exists, skipping...")
             continue
 
-        print(f"    Concatenating {len(sorted_files)
-                                   } files into '{output_filename}'...")
+        print(
+            f"    Concatenating {len(sorted_files)} files into '{output_filename}'..."
+        )
 
         # Concatenate files
         if concatenate_mp3s(sorted_files, output_path):
@@ -176,9 +182,9 @@ def main():
     """
     # Set up argument parser
     parser = argparse.ArgumentParser(
-        description='Concatenate MP3 files with the same base name in directories',
+        description="Concatenate MP3 files with the same base name in directories",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog='''
+        epilog="""
 Examples:
   %(prog)s /path/to/audiobooks
   %(prog)s "~/Downloads/Audio Files"
@@ -186,23 +192,25 @@ Examples:
 
 The script will recursively traverse all subdirectories and concatenate
 MP3 files with the same base name (ignoring numbers) into single files.
-        ''')
+        """,
+    )
 
-    parser.add_argument('directory',
-                        nargs='?',
-                        help='Target directory to process (required)')
+    parser.add_argument(
+        "directory", nargs="?", help="Target directory to process (required)"
+    )
 
-    parser.add_argument('--version',
-                        action='version',
-                        version='%(prog)s 1.0')
+    parser.add_argument("--version", action="version", version="%(prog)s 1.0")
 
     # Parse arguments
     args = parser.parse_args()
 
     # Check if directory argument is provided
     if not args.directory:
-        warnings.warn("No target directory specified. Please provide a directory path as an argument.",
-                      UserWarning, stacklevel=2)
+        warnings.warn(
+            "No target directory specified. Please provide a directory path as an argument.",
+            UserWarning,
+            stacklevel=2,
+        )
         print("Usage: python combine_mp3.py <directory>")
         print("Example: python combine_mp3.py /path/to/audiobooks")
         print("Use --help for more information.")
@@ -221,7 +229,7 @@ MP3 files with the same base name (ignoring numbers) into single files.
 
     # Check if ffmpeg is available
     try:
-        subprocess.run(['ffmpeg', '-version'], capture_output=True, check=True)
+        subprocess.run(["ffmpeg", "-version"], capture_output=True, check=True)
     except (subprocess.CalledProcessError, FileNotFoundError):
         print("Error: ffmpeg is not installed or not in PATH")
         print("Please install ffmpeg to use this script")
@@ -236,7 +244,7 @@ MP3 files with the same base name (ignoring numbers) into single files.
             continue
 
         # Only process directories that contain MP3 files
-        if any(file.lower().endswith('.mp3') for file in files):
+        if any(file.lower().endswith(".mp3") for file in files):
             process_directory(root)
 
     print("MP3 concatenation complete!")
