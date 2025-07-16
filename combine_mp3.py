@@ -38,9 +38,9 @@ def find_mp3_groups(directory):
     mp3_files = []
     
     # Pattern to match MP3 files with numbers at end: "filename - 01.mp3", "filename - 02.mp3", etc.
-    # or at beginning: "01 - filename.mp3", "02 - filename.mp3", etc.
+    # or at beginning: "01 - filename.mp3", "02 - filename.mp3", "01. filename.mp3", etc.
     pattern_end = re.compile(r'^.+?\s*-\s*(\d+)\.mp3$', re.IGNORECASE)
-    pattern_begin = re.compile(r'^(\d+)\s*-\s*.+?\.mp3$', re.IGNORECASE)
+    pattern_begin = re.compile(r'^(\d+)[\s\.]*[-\s]+.+?\.mp3$', re.IGNORECASE)
 
     for file in os.listdir(directory):
         if file.lower().endswith('.mp3'):
@@ -73,8 +73,8 @@ def sort_mp3_files(file_list):
         match = re.search(r'-\s*(\d+)\.mp3$', filename, re.IGNORECASE)
         if match:
             return int(match.group(1))
-        # Try number at beginning
-        match = re.search(r'^(\d+)\s*-', filename, re.IGNORECASE)
+        # Try number at beginning (both dash and period formats)
+        match = re.search(r'^(\d+)[\s\.]*[-\s]', filename, re.IGNORECASE)
         if match:
             return int(match.group(1))
         return 0
